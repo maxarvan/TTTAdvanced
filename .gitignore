@@ -72,3 +72,11 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+TTTAdvanced/Intermediate
+TTTAdvanced/Saved/*
+TTTAdvanced/.idea
+TTTAdvanced/.vsconfig
+TTTAdvanced/Binaries/*
+
+TTTAdvanced/Content
+
