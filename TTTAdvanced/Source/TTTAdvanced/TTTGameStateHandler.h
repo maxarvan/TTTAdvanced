@@ -1,6 +1,4 @@
-﻿
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
@@ -16,26 +14,30 @@ class TTTADVANCED_API UTTTGameStateHandler : public UObject
 
 public:
 	UTTTGameStateHandler(){}
-	
-	virtual void OnBegin(ATTTController* InOwnerController)
-	{
-		OwnerController = InOwnerController;
-	}
-	
-	virtual void OnEnd() {}
-	
-	//UFUNCTION(BlueprintCallable)
-	void StateHandled()
-	{
-		bStateHandled = true;
-	}
 
-	bool IsStateHandled() const { return bStateHandled; }
+	virtual void NativeOnBegin(ATTTController* InOwnerController);
+	virtual void NativeOnEnd();
+
+	//bool IsStateHandled() const { return bStateHandled; }
+	virtual UWorld* GetWorld() const override;
+	
+protected:
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnBegin();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void BP_OnEnd();
+
+	//UFUNCTION(BlueprintCallable)
+	// void StateHandled()
+	// {
+	// 	bStateHandled = true;
+	// }
 	
 protected:
 	bool bStateHandled = false;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	ATTTController* OwnerController;
 };
 
@@ -47,8 +49,8 @@ class TTTADVANCED_API UTTTPauseGameStateHandler : public UTTTGameStateHandler
 public:
 	UTTTPauseGameStateHandler(){}
 	
-	virtual void OnBegin(ATTTController* OwnerController) override;
-	virtual void OnEnd() override;
+	virtual void NativeOnBegin(ATTTController* OwnerController) override;
+	virtual void NativeOnEnd() override;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Widgets, meta=(AllowPrivateAccess = "true"))

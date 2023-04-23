@@ -28,6 +28,9 @@ public:
 	ETTTGamePawnType GetGamePawnType() const { return GamePawnType; }
 	void TryResumeGame();
 
+	UFUNCTION(Server, Reliable)
+	void Server_RequestGameRestart();
+	
 protected:
 	virtual void SetupInputComponent() override;
 	

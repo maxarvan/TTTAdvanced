@@ -2,9 +2,40 @@
 #include "TTTPauseMenuWidget.h"
 #include "ATTTController.h"
 
-void UTTTPauseGameStateHandler::OnBegin(ATTTController* InOwnerController)
+UWorld* UTTTGameStateHandler::GetWorld() const
 {
-	Super::OnBegin(InOwnerController);
+	if (GIsEditor && !GIsPlayInEditorWorld)
+	{
+		return nullptr;
+	}
+	else if (GetOuter())
+	{
+		return GetOuter()->GetWorld();
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+void UTTTGameStateHandler::NativeOnBegin(ATTTController* InOwnerController)
+{
+	OwnerController = InOwnerController;
+
+	ensure(OwnerController);
+	ensure(OwnerController->IsLocalPlayerController());
+	
+	BP_OnBegin();
+}
+
+void UTTTGameStateHandler::NativeOnEnd()
+{
+	BP_OnEnd();
+}
+
+void UTTTPauseGameStateHandler::NativeOnBegin(ATTTController* InOwnerController)
+{
+	Super::NativeOnBegin(InOwnerController);
 	
 	if( PauseMenuWidgetClass )
 	{
@@ -13,11 +44,11 @@ void UTTTPauseGameStateHandler::OnBegin(ATTTController* InOwnerController)
 	}
 }
 
-void UTTTPauseGameStateHandler::OnEnd()
+void UTTTPauseGameStateHandler::NativeOnEnd()
 {
-	Super::OnEnd();
+	Super::NativeOnEnd();
 	
-	if( PauseMenuWidget)
+	if(PauseMenuWidget)
 	{
 		PauseMenuWidget->RemoveFromParent();
 		PauseMenuWidget = nullptr;

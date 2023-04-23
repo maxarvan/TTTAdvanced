@@ -22,6 +22,11 @@ void UTTTPauseMenuWidget::NativeConstruct()
 	{
 		QuitButton->OnPressed.AddDynamic(this, &UTTTPauseMenuWidget::OnQuitButtonPressed);
 	}
+
+	if(RestartButton)
+	{
+		RestartButton->OnPressed.AddDynamic(this, &UTTTPauseMenuWidget::OnRestartButtonPressed);
+	}
 }
 
 void UTTTPauseMenuWidget::NativeDestruct()
@@ -37,6 +42,11 @@ void UTTTPauseMenuWidget::NativeDestruct()
 	{
 		QuitButton->OnPressed.RemoveDynamic(this, &UTTTPauseMenuWidget::OnQuitButtonPressed);
 	}
+
+	if(RestartButton)
+	{
+		RestartButton->OnPressed.RemoveDynamic(this, &UTTTPauseMenuWidget::OnRestartButtonPressed);
+	}
 }
 
 void UTTTPauseMenuWidget::OnResumeButtonPressed()
@@ -50,4 +60,12 @@ void UTTTPauseMenuWidget::OnResumeButtonPressed()
 void UTTTPauseMenuWidget::OnQuitButtonPressed()
 {
 	UKismetSystemLibrary::QuitGame(this, nullptr, EQuitPreference::Quit, false);
+}
+
+void UTTTPauseMenuWidget::OnRestartButtonPressed()
+{
+	if(ATTTController* TTTController = Cast<ATTTController>(GetOwningPlayer()))
+	{
+		TTTController->Server_RequestGameRestart();
+	}
 }

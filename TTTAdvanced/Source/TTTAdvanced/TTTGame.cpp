@@ -10,6 +10,8 @@
 ATTTGame::ATTTGame()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	bReplicates = false;
 }
 
 void ATTTGame::BeginPlay()
@@ -28,6 +30,8 @@ void ATTTGame::BeginPlay()
 
 void ATTTGame::ResetGame()
 {
+	SetGameStateType(ETTTGameStateType::Game);
+	
 	for(int i = 0 ; i < RegisteredControllers.Num() ; ++i)
 	{
 		RegisteredControllers[i]->SetMyTurn(i == 0);
@@ -153,7 +157,7 @@ void ATTTGame::OnTurnPerformed(const ATTTController* Controller)
 	if(GameBoard->IsBoardFilled())
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Game Ended"));
-		ResetGame();
+		SetGameStateType(ETTTGameStateType::PostGame);
 	}
 }
 

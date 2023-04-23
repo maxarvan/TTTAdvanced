@@ -21,11 +21,15 @@ private:
 	void OnResumeButtonPressed();
 	UFUNCTION()
 	void OnQuitButtonPressed();
-	
+	UFUNCTION()
+	void OnRestartButtonPressed();
 private:
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess, BindWidgetOptional))
 	UButton* ResumeButton;
 
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess, BindWidgetOptional))
 	UButton* QuitButton;
+
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess, BindWidgetOptional))
+	UButton* RestartButton;
 };

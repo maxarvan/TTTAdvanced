@@ -36,8 +36,8 @@ void ATTTController::OnPossess(APawn* PawnToPossess)
 
 	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
 	{
-		Game->RegisterControllerInGame(this);
 		Game->OnGameStateChanged.AddDynamic(this, &ATTTController::OnGameStateChanged);
+		Game->RegisterControllerInGame(this);
 	}
 }
 
@@ -81,36 +81,6 @@ void ATTTController::OnGameStateChanged(ETTTGameStateType NewGameStateType)
 	Client_OnGameStateChanged(NewGameStateType);
 }
 
-void ATTTController::Client_OnGameStateChanged_Implementation(ETTTGameStateType NewGameStateType)
-{
-	UTTTGameStateHandler* OldHandler = CurrentGameStateHandler;
-	
-	if(TSubclassOf<UTTTGameStateHandler>* NewHandlerType = GameStateHandlers.Find(NewGameStateType))
-	{
-		const UClass* ClassType = NewHandlerType->GetDefaultObject()->GetClass();
-		CurrentGameStateHandler = NewObject<UTTTGameStateHandler>(this, ClassType);
-	}
-	else
-	{
-		CurrentGameStateHandler = nullptr;
-	}
-
-	OnRep_CurrentGameStateHandler(OldHandler);
-	// if(NewGameStateType == ETTTGameStateType::Pause && PauseMenuWidgetClass)
-	// {
-	// 	PauseMenuWidget = CreateWidget<UTTTPauseMenuWidget>(this, PauseMenuWidgetClass);
-	// 	PauseMenuWidget->AddToViewport();
-	// }
-	// else
-	// {
-	// 	if(PauseMenuWidget)
-	// 	{
-	// 		PauseMenuWidget->RemoveFromParent();
-	// 		PauseMenuWidget = nullptr;
-	// 	}
-	// }
-}
-
 void ATTTController::OnMakeTurnInputPressed()
 {
 	FHitResult Hit;
@@ -145,12 +115,37 @@ void ATTTController::OnRep_CurrentGameStateHandler(UTTTGameStateHandler* OldHand
 {
 	if(OldHandler)
 	{
-		OldHandler->OnEnd();
+		OldHandler->NativeOnEnd();
 	}
 
 	if(CurrentGameStateHandler)
 	{
-		CurrentGameStateHandler->OnBegin(this);
+		CurrentGameStateHandler->NativeOnBegin(this);
+	}
+}
+
+void ATTTController::Client_OnGameStateChanged_Implementation(ETTTGameStateType NewGameStateType)
+{
+	UTTTGameStateHandler* OldHandler = CurrentGameStateHandler;
+	
+	if(TSubclassOf<UTTTGameStateHandler>* NewHandlerType = GameStateHandlers.Find(NewGameStateType))
+	{
+		const UClass* ClassType = NewHandlerType->GetDefaultObject()->GetClass();
+		CurrentGameStateHandler = NewObject<UTTTGameStateHandler>(this, ClassType);
+	}
+	else
+	{
+		CurrentGameStateHandler = nullptr;
+	}
+
+	OnRep_CurrentGameStateHandler(OldHandler);
+}
+
+void ATTTController::Server_RequestGameRestart_Implementation()
+{
+	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
+	{
+		Game->ResetGame();
 	}
 }
 
@@ -158,7 +153,7 @@ void ATTTController::Server_PerformTurn_Implementation(const FHitResult& Hit)
 {
 	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
 	{
-		if( ATTTGameBoardField* BoardField = Cast<ATTTGameBoardField>(Hit.GetActor()))
+		if(ATTTGameBoardField* BoardField = Cast<ATTTGameBoardField>(Hit.GetActor()))
 		{
 			Game->TryPerformTurn(this, BoardField);
 		}

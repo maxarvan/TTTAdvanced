@@ -26,7 +26,7 @@ enum class ETTTGameStateType : uint8
 	WaitForPlayers,
 	//Pregame,
 	Game,
-	//PostGame,
+	PostGame,
 	Pause,
 	Invalid UMETA(Hidden)
 };
@@ -51,10 +51,10 @@ public:
 	TSubclassOf<AActor> GetGamePawnClass(ETTTGamePawnType GamePawnType);
 	bool SetGameStateType(ETTTGameStateType NewGameStateType);
 	ETTTGameStateType GetGameStateType() const { return GameStateType; }
+	void ResetGame();
 	
 private:
 	void OnTurnPerformed(const ATTTController* Controller);
-	void ResetGame();
 	
 public:
 	UPROPERTY(EditDefaultsOnly, Category=Game)
@@ -71,6 +71,6 @@ private:
 
 	UPROPERTY()
 	ATTTGameBoard* GameBoard;
-
+	
 	ETTTGameStateType GameStateType = ETTTGameStateType::Invalid;
 };
