@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TTTGameStateHandler.h"
 #include "GameFramework/PlayerController.h"
 #include "ATTTController.generated.h"
 
 enum class ETTTGameStateType : uint8;
 enum class ETTTGamePawnType : uint8;
 
-class UTTTPauseMenuWidget;
 class UInputAction;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTurnChanged, bool, bIsMyTurn);
@@ -26,6 +26,7 @@ public:
 	bool GetIsMyTurn() const { return bIsMyTurn; }
 	void SetGamePawnType(ETTTGamePawnType InGamePawnType) { GamePawnType = InGamePawnType; }
 	ETTTGamePawnType GetGamePawnType() const { return GamePawnType; }
+	void TryResumeGame();
 
 protected:
 	virtual void SetupInputComponent() override;
@@ -43,13 +44,19 @@ private:
 	void Server_PerformTurn(const FHitResult& Hit);
 
 	UFUNCTION(Server, Reliable)
-	void Server_PauseGame();
+	void Server_RequestGameState(ETTTGameStateType NewState);
 
 	UFUNCTION()
 	void OnRep_IsMyTurn();
 
 	UFUNCTION()
+	void OnRep_CurrentGameStateHandler(UTTTGameStateHandler* OldHandler);
+
+	UFUNCTION()
 	void OnGameStateChanged(ETTTGameStateType NewGameStateType);
+
+	UFUNCTION(Client, Reliable)
+	void Client_OnGameStateChanged(ETTTGameStateType NewGameStateType);
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -66,12 +73,15 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* PauseGameInputAction;
+
+	UPROPERTY(EditAnywhere, Category=GameStates, meta = (AllowPrivateAccess = "true", ForceInlineRow))
+	TMap<ETTTGameStateType, TSubclassOf<UTTTGameStateHandler>> GameStateHandlers;
 	
 	ETTTGamePawnType GamePawnType;
 	
 	UPROPERTY(ReplicatedUsing=OnRep_IsMyTurn)
 	mutable bool bIsMyTurn = true;
 
-	UPROPERTY()
-	TObjectPtr<UTTTPauseMenuWidget> PauseMenuWidget; 
+	UPROPERTY(ReplicatedUsing=OnRep_CurrentGameStateHandler)
+	UTTTGameStateHandler* CurrentGameStateHandler;
 };

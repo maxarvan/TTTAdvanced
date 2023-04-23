@@ -1,6 +1,5 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "ATTTController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -60,7 +59,7 @@ void ATTTController::SetupInputComponent()
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
 		EnhancedInputComponent->BindAction(MakeTurnInputAction, ETriggerEvent::Started, this, &ThisClass::OnMakeTurnInputPressed);
-		EnhancedInputComponent->BindAction(PauseGameInputAction, ETriggerEvent::Started, this, &ThisClass::OnMakeTurnInputPressed);
+		EnhancedInputComponent->BindAction(PauseGameInputAction, ETriggerEvent::Started, this, &ThisClass::OnPauseGameInputPressed);
 	}
 }
 
@@ -69,23 +68,47 @@ void ATTTController::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ATTTController, bIsMyTurn);
+	DOREPLIFETIME(ATTTController, CurrentGameStateHandler);
+}
+
+void ATTTController::TryResumeGame()
+{
+	Server_RequestGameState(ETTTGameStateType::Game);
 }
 
 void ATTTController::OnGameStateChanged(ETTTGameStateType NewGameStateType)
 {
-	if(NewGameStateType == ETTTGameStateType::Pause)
+	Client_OnGameStateChanged(NewGameStateType);
+}
+
+void ATTTController::Client_OnGameStateChanged_Implementation(ETTTGameStateType NewGameStateType)
+{
+	UTTTGameStateHandler* OldHandler = CurrentGameStateHandler;
+	
+	if(TSubclassOf<UTTTGameStateHandler>* NewHandlerType = GameStateHandlers.Find(NewGameStateType))
 	{
-		PauseMenuWidget = NewObject<UTTTPauseMenuWidget>();
-		PauseMenuWidget->AddToViewport();
+		const UClass* ClassType = NewHandlerType->GetDefaultObject()->GetClass();
+		CurrentGameStateHandler = NewObject<UTTTGameStateHandler>(this, ClassType);
 	}
 	else
 	{
-		if(PauseMenuWidget)
-		{
-			PauseMenuWidget->RemoveFromParent();
-			PauseMenuWidget = nullptr;
-		}
+		CurrentGameStateHandler = nullptr;
 	}
+
+	OnRep_CurrentGameStateHandler(OldHandler);
+	// if(NewGameStateType == ETTTGameStateType::Pause && PauseMenuWidgetClass)
+	// {
+	// 	PauseMenuWidget = CreateWidget<UTTTPauseMenuWidget>(this, PauseMenuWidgetClass);
+	// 	PauseMenuWidget->AddToViewport();
+	// }
+	// else
+	// {
+	// 	if(PauseMenuWidget)
+	// 	{
+	// 		PauseMenuWidget->RemoveFromParent();
+	// 		PauseMenuWidget = nullptr;
+	// 	}
+	// }
 }
 
 void ATTTController::OnMakeTurnInputPressed()
@@ -100,7 +123,7 @@ void ATTTController::OnMakeTurnInputPressed()
 
 void ATTTController::OnPauseGameInputPressed()
 {
-	Server_PauseGame();
+	Server_RequestGameState(ETTTGameStateType::Pause);
 }
 
 void ATTTController::SetMyTurn(bool NewValue)
@@ -118,6 +141,19 @@ void ATTTController::OnRep_IsMyTurn()
 	OnTurnChanged.Broadcast(bIsMyTurn);
 }
 
+void ATTTController::OnRep_CurrentGameStateHandler(UTTTGameStateHandler* OldHandler)
+{
+	if(OldHandler)
+	{
+		OldHandler->OnEnd();
+	}
+
+	if(CurrentGameStateHandler)
+	{
+		CurrentGameStateHandler->OnBegin(this);
+	}
+}
+
 void ATTTController::Server_PerformTurn_Implementation(const FHitResult& Hit)
 {
 	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
@@ -129,10 +165,10 @@ void ATTTController::Server_PerformTurn_Implementation(const FHitResult& Hit)
 	}
 }
 
-void ATTTController::Server_PauseGame_Implementation()
+void ATTTController::Server_RequestGameState_Implementation(ETTTGameStateType NewState)
 {
 	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
 	{
-		Game->SetGameStateType(ETTTGameStateType::Pause);
+		Game->SetGameStateType(NewState);
 	}
 }

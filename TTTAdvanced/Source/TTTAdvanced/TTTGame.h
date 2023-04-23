@@ -9,10 +9,8 @@
 class ATTTController;
 class ATTTGameBoard;
 class ATTTGameBoardField;
-enum class ETTTGameStateType : uint8;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGameResetRequested);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameStateChanged, ETTTGameStateType, GameStateType);
 
 UENUM()
 enum class ETTTGamePawnType : uint8
@@ -33,6 +31,7 @@ enum class ETTTGameStateType : uint8
 	Invalid UMETA(Hidden)
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameStateChanged, ETTTGameStateType, GameStateType);
 
 UCLASS()
 class TTTADVANCED_API ATTTGame : public AActor

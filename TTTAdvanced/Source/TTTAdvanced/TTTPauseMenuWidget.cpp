@@ -2,6 +2,8 @@
 
 
 #include "TTTPauseMenuWidget.h"
+
+#include "ATTTController.h"
 #include "TTTGame.h"
 #include "TTTHelper.h"
 #include "Components/Button.h"
@@ -39,9 +41,9 @@ void UTTTPauseMenuWidget::NativeDestruct()
 
 void UTTTPauseMenuWidget::OnResumeButtonPressed()
 {
-	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
+	if(ATTTController* TTTController = Cast<ATTTController>(GetOwningPlayer()))
 	{
-		Game->SetGameStateType(ETTTGameStateType::Game);
+		TTTController->TryResumeGame();
 	}
 }
 
