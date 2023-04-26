@@ -28,15 +28,27 @@ void UTTTGameWidget::NativeDestruct()
 
 FString UTTTGameWidget::GetPlayerName() const
 {
-	if(const APlayerController* Controller = GetOwningPlayer())
+	if(const ATTTController* Controller = Cast<ATTTController>(GetOwningPlayer()))
 	{
-		if(Controller->GetNetMode() == NM_Client)
+		// if(Controller->GetNetMode() == NM_Client)
+		// {
+		// 	return "Client";
+		// }
+		// else
+		// {
+		// 	return "Server";
+		// }
+
+		switch(Controller->GamePawnState)
 		{
-			return "Client";
-		}
-		else
-		{
-			return "Server";
+		case EGamePawnState::NotSpawned:
+			return "NotSpawned";
+		case EGamePawnState::OnSpawner:
+			return "OnSpawner";
+		case EGamePawnState::InAir:
+			return "InAir";
+		case EGamePawnState::Placed:
+			return "Placed";			
 		}
 	}
 	return "FUCK YOU";

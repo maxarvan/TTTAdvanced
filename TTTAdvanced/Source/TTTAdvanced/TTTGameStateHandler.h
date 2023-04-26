@@ -7,7 +7,7 @@
 class UTTTPauseMenuWidget;
 class ATTTController;
 
-UCLASS(Abstract, Blueprintable)
+UCLASS(Abstract, Blueprintable, meta=(ShowWorldContextPin))
 class TTTADVANCED_API UTTTGameStateHandler : public UObject
 {
 	GENERATED_BODY()

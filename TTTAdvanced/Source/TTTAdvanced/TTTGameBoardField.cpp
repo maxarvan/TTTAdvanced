@@ -28,18 +28,32 @@ void ATTTGameBoardField::ResetGame()
 	}
 }
 
-bool ATTTGameBoardField::TryOccupy(TSubclassOf<AActor> GamePawnClass)
+// bool ATTTGameBoardField::TryOccupy(TSubclassOf<AActor> GamePawnClass)
+// {
+// 	if(!bIsOccupied)
+// 	{
+// 		const FActorSpawnParameters SpawnParameters;
+// 		const FVector Location = GetActorLocation();
+// 		const FRotator Rotation = GetActorRotation();
+//
+// 		OccupationPawn = GetWorld()->SpawnActor(GamePawnClass, &Location, &Rotation, SpawnParameters);
+// 	
+// 		return bIsOccupied = true;	
+// 	}
+// 	return false;
+// }
+//
+
+bool ATTTGameBoardField::TryOccupyWithGamePawn(AActor* GamePawn)
 {
-	if(!bIsOccupied)
+	if(!bIsOccupied && GamePawn)
 	{
-		const FActorSpawnParameters SpawnParameters;
 		const FVector Location = GetActorLocation();
 		const FRotator Rotation = GetActorRotation();
-
-		OccupationPawn = (GetWorld()->SpawnActor(GamePawnClass, &Location, &Rotation, SpawnParameters));
+		
+		GamePawn->TeleportTo(Location, Rotation);
 	
 		return bIsOccupied = true;	
 	}
 	return false;
 }
-

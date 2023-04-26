@@ -39,7 +39,17 @@ void ATTTController::OnPossess(APawn* PawnToPossess)
 		Game->OnGameStateChanged.AddDynamic(this, &ATTTController::OnGameStateChanged);
 		Game->RegisterControllerInGame(this);
 	}
+
+	RespawnGamePawn();
+	SetGamePawnState(EGamePawnState::OnSpawner);
 }
+
+void ATTTController::SetGamePawnState(EGamePawnState NewState)
+{
+	GamePawnState = NewState;
+	OnRep_GamePawnState();
+}
+
 
 void ATTTController::OnUnPossess()
 {
@@ -58,7 +68,7 @@ void ATTTController::SetupInputComponent()
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
-		EnhancedInputComponent->BindAction(MakeTurnInputAction, ETriggerEvent::Started, this, &ThisClass::OnMakeTurnInputPressed);
+		EnhancedInputComponent->BindAction(OperateGamePawnInputAction, ETriggerEvent::Started, this, &ThisClass::OnOperateGamePawnInputPressed);
 		EnhancedInputComponent->BindAction(PauseGameInputAction, ETriggerEvent::Started, this, &ThisClass::OnPauseGameInputPressed);
 	}
 }
@@ -81,14 +91,34 @@ void ATTTController::OnGameStateChanged(ETTTGameStateType NewGameStateType)
 	Client_OnGameStateChanged(NewGameStateType);
 }
 
-void ATTTController::OnMakeTurnInputPressed()
+void ATTTController::RespawnGamePawn()
+{
+	if(!HasAuthority())
+	{
+		return;
+	}
+	
+	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
+	{
+		const TSubclassOf<AActor> GamePawnClass = Game->GetGamePawnClass(GamePawnType);
+		const FVector Location = GetPawn()->GetActorLocation();
+		const FRotator Rotation = GetPawn()->GetActorRotation();
+		const FActorSpawnParameters SpawnParameters;
+		
+		CurrentGamePawn = GetWorld()->SpawnActor(GamePawnClass, &Location, &Rotation, SpawnParameters);
+	}
+}
+
+void ATTTController::OnOperateGamePawnInputPressed()
 {
 	FHitResult Hit;
-
-	if(GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit))
+	
+	if(!GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit))
 	{
-		Server_PerformTurn(Hit);
+		return;
 	}
+	
+	Server_OperateGamePawn(Hit);
 }
 
 void ATTTController::OnPauseGameInputPressed()
@@ -124,6 +154,11 @@ void ATTTController::OnRep_CurrentGameStateHandler(UTTTGameStateHandler* OldHand
 	}
 }
 
+void ATTTController::OnRep_GamePawnState()
+{
+	
+}
+
 void ATTTController::Client_OnGameStateChanged_Implementation(ETTTGameStateType NewGameStateType)
 {
 	UTTTGameStateHandler* OldHandler = CurrentGameStateHandler;
@@ -141,6 +176,37 @@ void ATTTController::Client_OnGameStateChanged_Implementation(ETTTGameStateType 
 	OnRep_CurrentGameStateHandler(OldHandler);
 }
 
+void ATTTController::Server_OperateGamePawn_Implementation(const FHitResult& Hit)
+{
+	if(CurrentGamePawn == nullptr)
+	{
+		return;
+	}
+		
+	switch(GamePawnState)
+	{
+	case EGamePawnState::OnSpawner:
+		{
+			if(Hit.GetActor() == CurrentGamePawn)
+			{
+				SetGamePawnState(EGamePawnState::InAir);
+			}
+		}
+		break;
+		
+	case EGamePawnState::InAir:
+		if(PerformTurn(CurrentGamePawn, Hit))
+		{
+			RespawnGamePawn();
+			SetGamePawnState(EGamePawnState::OnSpawner);
+		}
+		break;
+
+	default:
+		break;
+	}
+}
+
 void ATTTController::Server_RequestGameRestart_Implementation()
 {
 	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
@@ -149,15 +215,19 @@ void ATTTController::Server_RequestGameRestart_Implementation()
 	}
 }
 
-void ATTTController::Server_PerformTurn_Implementation(const FHitResult& Hit)
+bool ATTTController::PerformTurn(AActor* GamePawn, const FHitResult& Hit)
 {
+	ensure(GamePawn);
+	
 	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
 	{
 		if(ATTTGameBoardField* BoardField = Cast<ATTTGameBoardField>(Hit.GetActor()))
 		{
-			Game->TryPerformTurn(this, BoardField);
+			return Game->TryPerformTurn(this, CurrentGamePawn, BoardField);
 		}
 	}
+
+	return false;
 }
 
 void ATTTController::Server_RequestGameState_Implementation(ETTTGameStateType NewState)

@@ -104,17 +104,10 @@ TSubclassOf<AActor> ATTTGame::GetGamePawnClass(ETTTGamePawnType GamePawnType)
 	return nullptr;
 }
 
-bool ATTTGame::TryPerformTurn(const ATTTController* Controller, ATTTGameBoardField* BoardField)
+bool ATTTGame::TryPerformTurn(const ATTTController* Controller, AActor* GamePawn, ATTTGameBoardField* BoardField)
 {
-	if(Controller == nullptr)
-	{
-		return false;
-	}
-
-	// if(RegisteredControllers.Num() != 2)
-	// {
-	// 	return false;
-	// }
+	ensure(Controller);
+	ensure(GamePawn);
 
 	if(GetGameStateType() != ETTTGameStateType::Game)
 	{
@@ -131,7 +124,7 @@ bool ATTTGame::TryPerformTurn(const ATTTController* Controller, ATTTGameBoardFie
 		return false;
 	}
 	
-	if(GameBoard->TryOccupyBoardField(Controller, BoardField))
+	if(GameBoard->TryOccupyBoardFieldWithGamePawn(Controller, GamePawn, BoardField))
 	{
 		for(auto* RegCntrl : RegisteredControllers)
 		{

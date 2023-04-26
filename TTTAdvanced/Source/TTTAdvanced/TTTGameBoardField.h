@@ -15,7 +15,8 @@ public:
 	ATTTGameBoardField();
 
 	bool IsOccupied() const { return bIsOccupied; }
-	bool TryOccupy(TSubclassOf<AActor> GamePawnClass);
+	//bool TryOccupy(TSubclassOf<AActor> GamePawnClass);
+	bool TryOccupyWithGamePawn(AActor* GamePawn);
 
 	void ResetGame();
 

@@ -47,7 +47,7 @@ public:
 	void UnRegisterControllerInGame(ATTTController* Controller);
 	
 	bool IsControllerRegisteredInGame(const ATTTController* Controller) const;
-	bool TryPerformTurn(const ATTTController* Controller, ATTTGameBoardField* BoardField);
+	bool TryPerformTurn(const ATTTController* Controller, AActor* GamePawn, ATTTGameBoardField* BoardField);
 	TSubclassOf<AActor> GetGamePawnClass(ETTTGamePawnType GamePawnType);
 	bool SetGameStateType(ETTTGameStateType NewGameStateType);
 	ETTTGameStateType GetGameStateType() const { return GameStateType; }

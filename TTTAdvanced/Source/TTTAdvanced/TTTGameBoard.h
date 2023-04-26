@@ -16,12 +16,11 @@ class TTTADVANCED_API ATTTGameBoard : public AActor
 
 public:
 	ATTTGameBoard();
-
-	bool TryOccupyBoardField(const ATTTController* Controller, ATTTGameBoardField* BoardField);
+	
+	bool TryOccupyBoardFieldWithGamePawn(const ATTTController* Controller, AActor* GamePawn, ATTTGameBoardField* BoardField);
 	
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	void ResetGame();
 	bool IsBoardFilled() const { return OccupiedFieldsNum == BoardFields.Num(); }
 
 private:

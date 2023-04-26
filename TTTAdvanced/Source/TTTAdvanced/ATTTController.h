@@ -7,10 +7,29 @@
 #include "GameFramework/PlayerController.h"
 #include "ATTTController.generated.h"
 
+class UInputAction;
+
 enum class ETTTGameStateType : uint8;
 enum class ETTTGamePawnType : uint8;
 
-class UInputAction;
+// UENUM(BlueprintType)
+// enum class ETurnState : uint8
+// {
+// 	NotMyTurn,
+// 	MyTurn,
+//
+// 	Invalid UMETA(Hidden)
+// };
+
+UENUM(BlueprintType)
+enum class EGamePawnState : uint8
+{
+	NotSpawned,
+	OnSpawner,
+	InAir,
+	Placed,
+	Invalid UMETA(Hidden)
+};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTurnChanged, bool, bIsMyTurn);
 
@@ -39,16 +58,18 @@ protected:
 	virtual void OnPossess(APawn* PawnToPossess) override;
 	virtual void OnUnPossess() override;
 	
-	void OnMakeTurnInputPressed();
+	void OnOperateGamePawnInputPressed();
 	void OnPauseGameInputPressed();
 
 private:
-	UFUNCTION(Server, Reliable)
-	void Server_PerformTurn(const FHitResult& Hit);
+	bool PerformTurn(AActor* GamePawn, const FHitResult& Hit);
 
 	UFUNCTION(Server, Reliable)
 	void Server_RequestGameState(ETTTGameStateType NewState);
 
+	UFUNCTION(Server, Reliable)
+	void Server_OperateGamePawn(const FHitResult& Hit);
+	
 	UFUNCTION()
 	void OnRep_IsMyTurn();
 
@@ -56,11 +77,18 @@ private:
 	void OnRep_CurrentGameStateHandler(UTTTGameStateHandler* OldHandler);
 
 	UFUNCTION()
+	void OnRep_GamePawnState();
+	
+	UFUNCTION()
 	void OnGameStateChanged(ETTTGameStateType NewGameStateType);
 
 	UFUNCTION(Client, Reliable)
 	void Client_OnGameStateChanged(ETTTGameStateType NewGameStateType);
 
+	void RespawnGamePawn();
+
+	void SetGamePawnState(EGamePawnState NewState);
+		
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnTurnChanged OnTurnChanged;
@@ -72,7 +100,7 @@ private:
 
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	UInputAction* MakeTurnInputAction;
+	UInputAction* OperateGamePawnInputAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* PauseGameInputAction;
@@ -87,4 +115,12 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_CurrentGameStateHandler)
 	UTTTGameStateHandler* CurrentGameStateHandler;
+
+	// public for debug only
+public:
+	UPROPERTY(ReplicatedUsing=OnRep_GamePawnState)
+	EGamePawnState GamePawnState = EGamePawnState::Invalid;
+
+	UPROPERTY()
+	TObjectPtr<AActor> CurrentGamePawn = nullptr;
 };
