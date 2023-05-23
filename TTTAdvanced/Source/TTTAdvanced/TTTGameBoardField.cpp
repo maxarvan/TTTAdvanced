@@ -1,10 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TTTGameBoardField.h"
-
-#include "TTTGame.h"
-#include "TTTHelper.h"
-
+#include "TTTGamePawn.h"
 
 ATTTGameBoardField::ATTTGameBoardField()
 {
@@ -44,12 +41,14 @@ void ATTTGameBoardField::ResetGame()
 // }
 //
 
-bool ATTTGameBoardField::TryOccupyWithGamePawn(AActor* GamePawn)
+bool ATTTGameBoardField::TryOccupyWithGamePawn(ATTTGamePawn* GamePawn)
 {
 	if(!bIsOccupied && GamePawn)
 	{
 		const FVector Location = GetActorLocation();
 		const FRotator Rotation = GetActorRotation();
+
+		GamePawn->SetState(EGamePawnState::Placed);
 		
 		GamePawn->TeleportTo(Location, Rotation);
 	

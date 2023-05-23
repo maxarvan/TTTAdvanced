@@ -6,6 +6,7 @@
 #include "TTTGame.h"
 #include "TTTGameBoardField.h"
 #include "TTTHelper.h"
+#include "TTTGamePawn.h"
 #include "TTTPauseMenuWidget.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Net/UnrealNetwork.h"
@@ -41,15 +42,8 @@ void ATTTController::OnPossess(APawn* PawnToPossess)
 	}
 
 	RespawnGamePawn();
-	SetGamePawnState(EGamePawnState::OnSpawner);
+	
 }
-
-void ATTTController::SetGamePawnState(EGamePawnState NewState)
-{
-	GamePawnState = NewState;
-	OnRep_GamePawnState();
-}
-
 
 void ATTTController::OnUnPossess()
 {
@@ -100,12 +94,15 @@ void ATTTController::RespawnGamePawn()
 	
 	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
 	{
-		const TSubclassOf<AActor> GamePawnClass = Game->GetGamePawnClass(GamePawnType);
+		const TSubclassOf<ATTTGamePawn> GamePawnClass = Game->GetGamePawnClass(GamePawnType);
 		const FVector Location = GetPawn()->GetActorLocation();
 		const FRotator Rotation = GetPawn()->GetActorRotation();
-		const FActorSpawnParameters SpawnParameters;
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		
-		CurrentGamePawn = GetWorld()->SpawnActor(GamePawnClass, &Location, &Rotation, SpawnParameters);
+		CurrentGamePawn = Cast<ATTTGamePawn>(GetWorld()->SpawnActor(GamePawnClass, &Location, &Rotation, SpawnParameters));
+
+		CurrentGamePawn->SetState(EGamePawnState::OnSpawner);
 	}
 }
 
@@ -154,11 +151,6 @@ void ATTTController::OnRep_CurrentGameStateHandler(UTTTGameStateHandler* OldHand
 	}
 }
 
-void ATTTController::OnRep_GamePawnState()
-{
-	
-}
-
 void ATTTController::Client_OnGameStateChanged_Implementation(ETTTGameStateType NewGameStateType)
 {
 	UTTTGameStateHandler* OldHandler = CurrentGameStateHandler;
@@ -182,14 +174,19 @@ void ATTTController::Server_OperateGamePawn_Implementation(const FHitResult& Hit
 	{
 		return;
 	}
-		
-	switch(GamePawnState)
+
+	if(!GetIsMyTurn())
+	{
+		return;
+	}
+	
+	switch(CurrentGamePawn->GetState())
 	{
 	case EGamePawnState::OnSpawner:
 		{
 			if(Hit.GetActor() == CurrentGamePawn)
 			{
-				SetGamePawnState(EGamePawnState::InAir);
+				CurrentGamePawn->SetState(EGamePawnState::InAir);
 			}
 		}
 		break;
@@ -198,8 +195,12 @@ void ATTTController::Server_OperateGamePawn_Implementation(const FHitResult& Hit
 		if(PerformTurn(CurrentGamePawn, Hit))
 		{
 			RespawnGamePawn();
-			SetGamePawnState(EGamePawnState::OnSpawner);
 		}
+		else
+		{
+			CurrentGamePawn->SetState(EGamePawnState::OnSpawner);
+		}
+		
 		break;
 
 	default:
@@ -215,7 +216,7 @@ void ATTTController::Server_RequestGameRestart_Implementation()
 	}
 }
 
-bool ATTTController::PerformTurn(AActor* GamePawn, const FHitResult& Hit)
+bool ATTTController::PerformTurn(ATTTGamePawn* GamePawn, const FHitResult& Hit)
 {
 	ensure(GamePawn);
 	

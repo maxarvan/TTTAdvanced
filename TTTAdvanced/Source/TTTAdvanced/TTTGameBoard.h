@@ -8,6 +8,7 @@
 #include "TTTGameBoard.generated.h"
 
 class ATTTGameBoardField;
+class ATTTGamePawn;
 
 UCLASS()
 class TTTADVANCED_API ATTTGameBoard : public AActor
@@ -17,7 +18,7 @@ class TTTADVANCED_API ATTTGameBoard : public AActor
 public:
 	ATTTGameBoard();
 	
-	bool TryOccupyBoardFieldWithGamePawn(const ATTTController* Controller, AActor* GamePawn, ATTTGameBoardField* BoardField);
+	bool TryOccupyBoardFieldWithGamePawn(const ATTTController* Controller, ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField);
 	
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

@@ -62,7 +62,7 @@ void ATTTGameBoard::HandleResetGameRequested()
 	}
 }
 
-bool ATTTGameBoard::TryOccupyBoardFieldWithGamePawn(const ATTTController* Controller, AActor* GamePawn, ATTTGameBoardField* BoardField)
+bool ATTTGameBoard::TryOccupyBoardFieldWithGamePawn(const ATTTController* Controller, ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField)
 {
 	ensure(Controller);
 	ensure(GamePawn);
@@ -73,7 +73,7 @@ bool ATTTGameBoard::TryOccupyBoardFieldWithGamePawn(const ATTTController* Contro
 		return false;
 	}
 	
-	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
+	//if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
 	{
 		const bool OccupationResult = BoardField->TryOccupyWithGamePawn(GamePawn);
 

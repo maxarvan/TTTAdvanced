@@ -93,9 +93,9 @@ bool ATTTGame::IsControllerRegisteredInGame(const ATTTController* Controller) co
 	return RegisteredControllers.Find(const_cast<ATTTController*>(Controller)) != INDEX_NONE;
 }
 
-TSubclassOf<AActor> ATTTGame::GetGamePawnClass(ETTTGamePawnType GamePawnType)
+TSubclassOf<ATTTGamePawn> ATTTGame::GetGamePawnClass(ETTTGamePawnType GamePawnType)
 {
-	if(const TSubclassOf<AActor>* Class = GamePawns.Find(GamePawnType))
+	if(const TSubclassOf<ATTTGamePawn>* Class = GamePawns.Find(GamePawnType))
 	{
 		return *Class;
 	}
@@ -104,7 +104,7 @@ TSubclassOf<AActor> ATTTGame::GetGamePawnClass(ETTTGamePawnType GamePawnType)
 	return nullptr;
 }
 
-bool ATTTGame::TryPerformTurn(const ATTTController* Controller, AActor* GamePawn, ATTTGameBoardField* BoardField)
+bool ATTTGame::TryPerformTurn(const ATTTController* Controller, ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField)
 {
 	ensure(Controller);
 	ensure(GamePawn);

@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "TTTGameBoardField.generated.h"
 
+class ATTTGamePawn;
+
 UCLASS()
 class TTTADVANCED_API ATTTGameBoardField : public AActor
 {
@@ -15,8 +17,7 @@ public:
 	ATTTGameBoardField();
 
 	bool IsOccupied() const { return bIsOccupied; }
-	//bool TryOccupy(TSubclassOf<AActor> GamePawnClass);
-	bool TryOccupyWithGamePawn(AActor* GamePawn);
+	bool TryOccupyWithGamePawn(ATTTGamePawn* GamePawn);
 
 	void ResetGame();
 

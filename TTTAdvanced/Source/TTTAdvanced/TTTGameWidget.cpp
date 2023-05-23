@@ -30,25 +30,13 @@ FString UTTTGameWidget::GetPlayerName() const
 {
 	if(const ATTTController* Controller = Cast<ATTTController>(GetOwningPlayer()))
 	{
-		// if(Controller->GetNetMode() == NM_Client)
-		// {
-		// 	return "Client";
-		// }
-		// else
-		// {
-		// 	return "Server";
-		// }
-
-		switch(Controller->GamePawnState)
+		if(Controller->GetNetMode() == NM_Client)
 		{
-		case EGamePawnState::NotSpawned:
-			return "NotSpawned";
-		case EGamePawnState::OnSpawner:
-			return "OnSpawner";
-		case EGamePawnState::InAir:
-			return "InAir";
-		case EGamePawnState::Placed:
-			return "Placed";			
+			return "Client";
+		}
+		else
+		{
+			return "Server";
 		}
 	}
 	return "FUCK YOU";

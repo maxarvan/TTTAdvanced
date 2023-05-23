@@ -9,6 +9,7 @@
 class ATTTController;
 class ATTTGameBoard;
 class ATTTGameBoardField;
+class ATTTGamePawn;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGameResetRequested);
 
@@ -47,8 +48,8 @@ public:
 	void UnRegisterControllerInGame(ATTTController* Controller);
 	
 	bool IsControllerRegisteredInGame(const ATTTController* Controller) const;
-	bool TryPerformTurn(const ATTTController* Controller, AActor* GamePawn, ATTTGameBoardField* BoardField);
-	TSubclassOf<AActor> GetGamePawnClass(ETTTGamePawnType GamePawnType);
+	bool TryPerformTurn(const ATTTController* Controller, ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField);
+	TSubclassOf<ATTTGamePawn> GetGamePawnClass(ETTTGamePawnType GamePawnType);
 	bool SetGameStateType(ETTTGameStateType NewGameStateType);
 	ETTTGameStateType GetGameStateType() const { return GameStateType; }
 	void ResetGame();
@@ -61,7 +62,7 @@ public:
 	TSubclassOf<ATTTGameBoard> GameBoardClass;
 
 	UPROPERTY(EditDefaultsOnly, Category=Game, meta=(AllowPrivateAccess = "true"))
-	TMap< ETTTGamePawnType, TSubclassOf<AActor> > GamePawns;
+	TMap< ETTTGamePawnType, TSubclassOf<ATTTGamePawn> > GamePawns;
 
 	FOnGameResetRequested OnGameResetRequested;
 	FOnGameStateChanged OnGameStateChanged;
