@@ -14,6 +14,7 @@ ATTTGame::ATTTGame()
 	bReplicates = false;
 }
 
+
 void ATTTGame::BeginPlay()
 {
 	Super::BeginPlay();
@@ -104,7 +105,7 @@ TSubclassOf<ATTTGamePawn> ATTTGame::GetGamePawnClass(ETTTGamePawnType GamePawnTy
 	return nullptr;
 }
 
-bool ATTTGame::TryPerformTurn(const ATTTController* Controller, ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField)
+bool ATTTGame::CanPerformTurn(const ATTTController* Controller, ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField) const
 {
 	ensure(Controller);
 	ensure(GamePawn);
@@ -123,8 +124,18 @@ bool ATTTGame::TryPerformTurn(const ATTTController* Controller, ATTTGamePawn* Ga
 	{
 		return false;
 	}
+
+	return GameBoard->CanOccupyBoardFieldWithGamePawn(Controller, GamePawn, BoardField);
+}
+
+bool ATTTGame::PerformTurn(const ATTTController* Controller, ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField)
+{
+	if(!CanPerformTurn(Controller, GamePawn, BoardField))
+	{
+		return false;
+	}
 	
-	if(GameBoard->TryOccupyBoardFieldWithGamePawn(Controller, GamePawn, BoardField))
+	if(GameBoard->OccupyBoardFieldWithGamePawn(Controller, GamePawn, BoardField))
 	{
 		for(auto* RegCntrl : RegisteredControllers)
 		{

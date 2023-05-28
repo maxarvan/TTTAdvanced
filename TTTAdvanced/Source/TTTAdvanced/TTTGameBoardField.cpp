@@ -41,17 +41,22 @@ void ATTTGameBoardField::ResetGame()
 // }
 //
 
-bool ATTTGameBoardField::TryOccupyWithGamePawn(ATTTGamePawn* GamePawn)
+bool ATTTGameBoardField::CanOccupyWithGamePawn(const ATTTGamePawn* GamePawn) const
 {
-	if(!bIsOccupied && GamePawn)
+	return !bIsOccupied && GamePawn;
+}
+
+bool ATTTGameBoardField::OccupyWithGamePawn(ATTTGamePawn* GamePawn)
+{
+	if(CanOccupyWithGamePawn(GamePawn))
 	{
 		const FVector Location = GetActorLocation();
 		const FRotator Rotation = GetActorRotation();
-
-		GamePawn->SetState(EGamePawnState::Placed);
-		
+				
 		GamePawn->TeleportTo(Location, Rotation);
-	
+
+		OccupationPawn = GamePawn;
+		
 		return bIsOccupied = true;	
 	}
 	return false;

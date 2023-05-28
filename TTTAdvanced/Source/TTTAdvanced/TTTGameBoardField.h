@@ -17,7 +17,8 @@ public:
 	ATTTGameBoardField();
 
 	bool IsOccupied() const { return bIsOccupied; }
-	bool TryOccupyWithGamePawn(ATTTGamePawn* GamePawn);
+	bool CanOccupyWithGamePawn(const ATTTGamePawn* GamePawn) const;
+	bool OccupyWithGamePawn(ATTTGamePawn* GamePawn);
 
 	void ResetGame();
 

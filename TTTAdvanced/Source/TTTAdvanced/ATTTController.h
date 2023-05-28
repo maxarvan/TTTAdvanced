@@ -12,15 +12,7 @@ class ATTTGamePawn;
 
 enum class ETTTGameStateType : uint8;
 enum class ETTTGamePawnType : uint8;
-
-// UENUM(BlueprintType)
-// enum class ETurnState : uint8
-// {
-// 	NotMyTurn,
-// 	MyTurn,
-//
-// 	Invalid UMETA(Hidden)
-// };
+enum class EGamePawnState : uint8;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTurnChanged, bool, bIsMyTurn);
 
@@ -53,6 +45,7 @@ protected:
 	void OnPauseGameInputPressed();
 
 private:
+	bool CanPerformTurn(ATTTGamePawn* GamePawn, const FHitResult& Hit);
 	bool PerformTurn(ATTTGamePawn* GamePawn, const FHitResult& Hit);
 
 	UFUNCTION(Server, Reliable)
@@ -68,12 +61,18 @@ private:
 	void OnRep_CurrentGameStateHandler(UTTTGameStateHandler* OldHandler);
 	
 	UFUNCTION()
-	void OnGameStateChanged(ETTTGameStateType NewGameStateType);
+	void HandleGameStateChanged(ETTTGameStateType NewGameStateType);
+
+	UFUNCTION()
+	void HandleResetGameRequested();
 
 	UFUNCTION(Client, Reliable)
 	void Client_OnGameStateChanged(ETTTGameStateType NewGameStateType);
 
-	void RespawnGamePawn();
+	void SpawnGamePawns();
+	void DespawnGamePawns();
+
+	void SetPawnState(ATTTGamePawn* GamePawn, EGamePawnState State);
 		
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -101,9 +100,10 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_CurrentGameStateHandler)
 	UTTTGameStateHandler* CurrentGameStateHandler;
-
-	// public for debug only
-public:
+	
 	UPROPERTY()
-	TObjectPtr<ATTTGamePawn> CurrentGamePawn = nullptr;
+	TArray<TObjectPtr<ATTTGamePawn> > GamePawns;
+
+	UPROPERTY()
+	TObjectPtr<ATTTGamePawn> PawnInAir = nullptr;
 };

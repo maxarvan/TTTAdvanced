@@ -5,15 +5,18 @@
 
 ATTTGamePawn::ATTTGamePawn()
 {
-	SetReplicates(true);
-	SetReplicatingMovement(true);
-
 	PrimaryActorTick.bCanEverTick = true;
 }
 
 void ATTTGamePawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		SetReplicatingMovement(true);
+		SetReplicates(true);
+	}
 }
 
 void ATTTGamePawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
