@@ -18,14 +18,15 @@ enum class ETTTGamePawnType : uint8
 {
 	Cross,
 	Circle,
+	Hidden UMETA(Hidden),
 	Invalid UMETA(Hidden)
 };
+ENUM_RANGE_BY_FIRST_AND_LAST(ETTTGamePawnType, ETTTGamePawnType::Cross, ETTTGamePawnType::Circle);
 
 UENUM()
 enum class ETTTGameStateType : uint8
 {
 	WaitForPlayers,
-	//Pregame,
 	Game,
 	PostGame,
 	Pause,

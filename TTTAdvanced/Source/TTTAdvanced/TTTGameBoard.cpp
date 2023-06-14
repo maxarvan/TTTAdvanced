@@ -9,14 +9,12 @@
 
 
 ATTTGameBoard::ATTTGameBoard()
-{
-}
+{}
 
 void ATTTGameBoard::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// BoardFields
 	BoardFields.Reserve(FieldsNumber * FieldsNumber);
 	BoardFields.Init(nullptr, FieldsNumber * FieldsNumber);
 	
@@ -95,4 +93,52 @@ bool ATTTGameBoard::OccupyBoardFieldWithGamePawn(const ATTTController* Controlle
 	}
 	
 	return OccupationResult;
+}
+
+ETTTGamePawnType ATTTGameBoard::Has3PawnsInARow() const
+{
+	static int DirectionOffsets[] = {1, 3, 4};
+
+	auto ArePawnsSameInARow = [this](int BoardFieldIndex, int DirectionOffset,int MaxMagnitude, ETTTGamePawnType PawnType) -> bool
+	{
+		for(int Magnitude = 1 ; Magnitude < MaxMagnitude ; ++Magnitude)
+		{
+			const int OtherIndex = BoardFieldIndex + DirectionOffset * Magnitude;
+			if(OtherIndex >= BoardFields.Num())
+			{
+				return false;
+			}
+
+			if(!BoardFields[BoardFieldIndex]->AreOccupiedByGamePawnType(BoardFields[OtherIndex], PawnType))
+			{
+				return false;
+			}
+					
+			if(Magnitude == MaxMagnitude - 1)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	};
+	
+	for(const ETTTGamePawnType PawnType : TEnumRange<ETTTGamePawnType>())
+	{
+		// We need only three first boardfields, no need to cover the wholeboard 
+		for(int BoardFieldIndex = 0 ; BoardFieldIndex < 3 ; ++BoardFieldIndex)
+		{
+			for(const auto& Offset : DirectionOffsets)
+			{
+				static const int MaxMagnitude = 3;
+				
+				if(ArePawnsSameInARow(BoardFieldIndex, Offset, MaxMagnitude, PawnType))
+				{
+					return PawnType;
+				}
+			}
+		}
+	}
+
+	return ETTTGamePawnType::Invalid;
 }

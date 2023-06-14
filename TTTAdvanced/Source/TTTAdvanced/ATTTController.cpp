@@ -96,6 +96,24 @@ void ATTTController::HandleResetGameRequested()
 	SpawnGamePawns();
 }
 
+void ATTTController::HandleGamePawnStateChanged(ATTTGamePawn* GamePawn, EGamePawnState GamePawnState)
+{
+	if(GamePawn)
+	{
+		if(PawnInAir && PawnInAir != GamePawn)
+		{
+			PawnInAir->SetState(EGamePawnState::OnSpawner);
+		}
+
+		PawnInAir = nullptr;
+
+		if(GamePawnState == EGamePawnState::InAir)
+		{
+			PawnInAir = GamePawn;
+		}
+	}
+}
+
 void ATTTController::SpawnGamePawns()
 {
 	if(!HasAuthority())
@@ -115,10 +133,12 @@ void ATTTController::SpawnGamePawns()
 		const FRotator Rotation = GetPawn()->GetActorRotation();
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParameters.Owner = this;
 
 		ATTTGamePawn* Pawn = Cast<ATTTGamePawn>(GetWorld()->SpawnActor(GamePawnClass, &Location, &Rotation, SpawnParameters));
 
 		Pawn->SetState(EGamePawnState::OnSpawner);
+		Pawn->SetPawnType(GamePawnType);
 
 		return Pawn;
 	};
@@ -215,26 +235,6 @@ void ATTTController::Client_OnGameStateChanged_Implementation(ETTTGameStateType 
 	OnRep_CurrentGameStateHandler(OldHandler);
 }
 
-void ATTTController::SetPawnState(ATTTGamePawn* GamePawn, EGamePawnState State)
-{
-	if(GamePawn)
-	{
-		GamePawn->SetState(State);
-
-		if(PawnInAir && PawnInAir != GamePawn)
-		{
-			PawnInAir->SetState(EGamePawnState::OnSpawner);
-		}
-
-		PawnInAir = nullptr;
-
-		if(State == EGamePawnState::InAir)
-		{
-			PawnInAir = GamePawn;
-		}
-	}
-}
-
 void ATTTController::Server_OperateGamePawn_Implementation(const FHitResult& Hit)
 {
 	if(!GetIsMyTurn())
@@ -250,11 +250,11 @@ void ATTTController::Server_OperateGamePawn_Implementation(const FHitResult& Hit
 		switch(HitPawn->GetState())
 		{
 		case EGamePawnState::OnSpawner:
-			SetPawnState(HitPawn, EGamePawnState::InAir);
+			HitPawn->SetState(EGamePawnState::InAir);
 			break;
 		
 		case EGamePawnState::InAir:
-			SetPawnState(HitPawn, EGamePawnState::OnSpawner);
+			HitPawn->SetState(EGamePawnState::OnSpawner);
 			break;
 			
 		default:
@@ -265,17 +265,12 @@ void ATTTController::Server_OperateGamePawn_Implementation(const FHitResult& Hit
 	{
 		if(CanPerformTurn(PawnInAir, Hit))
 		{
-			ATTTGamePawn* ShitPawn = PawnInAir;
-			SetPawnState(PawnInAir, EGamePawnState::Placed);
-
-			// SHITTTTT ShitPawn
-			
-			PerformTurn(ShitPawn, Hit);
+			PerformTurn(PawnInAir, Hit);
 		}
 	}
 	else if(PawnInAir)
 	{
-		SetPawnState(PawnInAir, EGamePawnState::OnSpawner);
+		PawnInAir->SetState(EGamePawnState::OnSpawner);
 	}
 }
 

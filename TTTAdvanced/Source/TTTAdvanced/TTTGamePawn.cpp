@@ -1,6 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TTTGamePawn.h"
+
+#include "ATTTController.h"
 #include "Net/UnrealNetwork.h"
 
 ATTTGamePawn::ATTTGamePawn()
@@ -30,6 +32,11 @@ void ATTTGamePawn::SetState(EGamePawnState NewState)
 {
 	GamePawnState = NewState;
 	OnRep_GamePawnState();
+
+	if(ATTTController* Controller = Cast<ATTTController>(GetOwner()))
+	{
+		Controller->HandleGamePawnStateChanged(this, GamePawnState);
+	}
 }
 
 EGamePawnState ATTTGamePawn::GetState() const

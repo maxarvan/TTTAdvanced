@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TTTGamePawn.h"
 #include "TTTGameStateHandler.h"
 #include "GameFramework/PlayerController.h"
 #include "ATTTController.generated.h"
@@ -32,6 +33,8 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void Server_RequestGameRestart();
+
+	void HandleGamePawnStateChanged(ATTTGamePawn* GamePawn, EGamePawnState GamePawnState);
 	
 protected:
 	virtual void SetupInputComponent() override;
@@ -65,25 +68,21 @@ private:
 
 	UFUNCTION()
 	void HandleResetGameRequested();
-
+	
 	UFUNCTION(Client, Reliable)
 	void Client_OnGameStateChanged(ETTTGameStateType NewGameStateType);
 
 	void SpawnGamePawns();
 	void DespawnGamePawns();
-
-	void SetPawnState(ATTTGamePawn* GamePawn, EGamePawnState State);
 		
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnTurnChanged OnTurnChanged;
 	
 private:
-	/** MappingContext */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
     class UInputMappingContext* DefaultMappingContext;
 
-	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* OperateGamePawnInputAction;
 

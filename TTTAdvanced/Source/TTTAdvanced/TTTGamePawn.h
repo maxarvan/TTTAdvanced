@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TTTGame.h"
 #include "GameFramework/Actor.h"
 #include "TTTGamePawn.generated.h"
 
@@ -29,6 +30,16 @@ public:
 	void SetState(EGamePawnState NewState);
 	EGamePawnState GetState() const;
 
+	void SetPawnType(ETTTGamePawnType NewPawnType)
+	{
+		PawnType = NewPawnType;
+	}
+	
+	ETTTGamePawnType GetPawnType() const
+	{
+		return PawnType;
+	}
+
 	virtual void Tick(float Delta) override;
 	
 protected:
@@ -44,4 +55,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnGamePawnStateChanged OnGamePawnStateChanged;
+
+private:
+	ETTTGamePawnType PawnType = ETTTGamePawnType::Invalid;
 };

@@ -24,6 +24,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	bool IsBoardFilled() const { return OccupiedFieldsNum == BoardFields.Num(); }
+	ETTTGamePawnType Has3PawnsInARow() const; 
 
 private:
 	UFUNCTION()

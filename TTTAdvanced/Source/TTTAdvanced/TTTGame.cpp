@@ -158,9 +158,14 @@ bool ATTTGame::PerformTurn(const ATTTController* Controller, ATTTGamePawn* GameP
 
 void ATTTGame::OnTurnPerformed(const ATTTController* Controller)
 {
-	if(GameBoard->IsBoardFilled())
+	// if(GameBoard->IsBoardFilled())
+	// {
+	// 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Game Ended"));
+	// 	SetGameStateType(ETTTGameStateType::PostGame);
+	// }
+		
+	if(GameBoard->Has3PawnsInARow() != ETTTGamePawnType::Invalid)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Game Ended"));
 		SetGameStateType(ETTTGameStateType::PostGame);
 	}
 }

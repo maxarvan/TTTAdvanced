@@ -7,6 +7,7 @@
 #include "TTTGameBoardField.generated.h"
 
 class ATTTGamePawn;
+enum class ETTTGamePawnType : uint8;
 
 UCLASS()
 class TTTADVANCED_API ATTTGameBoardField : public AActor
@@ -19,7 +20,7 @@ public:
 	bool IsOccupied() const { return bIsOccupied; }
 	bool CanOccupyWithGamePawn(const ATTTGamePawn* GamePawn) const;
 	bool OccupyWithGamePawn(ATTTGamePawn* GamePawn);
-
+	bool AreOccupiedByGamePawnType(const ATTTGameBoardField* OtherField, ETTTGamePawnType GamePawnType) const;
 	void ResetGame();
 
 protected:
@@ -29,5 +30,5 @@ private:
 	bool bIsOccupied = false;
 
 	UPROPERTY()
-	AActor* OccupationPawn = nullptr;
+	ATTTGamePawn* OccupationPawn = nullptr;
 };
