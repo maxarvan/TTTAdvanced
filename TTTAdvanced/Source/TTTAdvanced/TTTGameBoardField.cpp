@@ -14,8 +14,6 @@ void ATTTGameBoardField::BeginPlay()
 
 void ATTTGameBoardField::ResetGame()
 {
-	bIsOccupied = false;
-
 	if(OccupationPawn)
 	{
 		OccupationPawn->SetLifeSpan(3.0f);
@@ -25,9 +23,20 @@ void ATTTGameBoardField::ResetGame()
 	}
 }
 
+bool ATTTGameBoardField::IsOccupied() const
+{
+	return IsValid(OccupationPawn);
+}
+
 bool ATTTGameBoardField::CanOccupyWithGamePawn(const ATTTGamePawn* GamePawn) const
 {
-	return !bIsOccupied && GamePawn;
+	//return !bIsOccupied && GamePawn;
+	if(!GamePawn)
+	{
+		return false;
+	}
+	
+	return !IsOccupied() || (OccupationPawn->GetPawnSizeType() < GamePawn->GetPawnSizeType());
 }
 
 bool ATTTGameBoardField::OccupyWithGamePawn(ATTTGamePawn* GamePawn)
@@ -41,9 +50,16 @@ bool ATTTGameBoardField::OccupyWithGamePawn(ATTTGamePawn* GamePawn)
 		
 		GamePawn->TeleportTo(Location, Rotation);
 
-		OccupationPawn = GamePawn;
+		if(OccupationPawn)
+		{
+			OccupationPawn->SetLifeSpan(3.0f);
+			OccupationPawn->SetActorHiddenInGame(true);
+			OccupationPawn->SetActorEnableCollision(false);
+		}
 		
-		return bIsOccupied = true;	
+		OccupationPawn = GamePawn;
+
+		return true;
 	}
 	return false;
 }
@@ -55,7 +71,7 @@ bool ATTTGameBoardField::AreOccupiedByGamePawnType(const ATTTGameBoardField* Oth
 		return false;
 	}
 	
-	if(bIsOccupied && OtherField->IsOccupied() && OccupationPawn->GetPawnType() == OtherField->OccupationPawn->GetPawnType())
+	if(IsOccupied() && OtherField->IsOccupied() && OccupationPawn->GetPawnType() == OtherField->OccupationPawn->GetPawnType())
 	{
 		return true;
 	}

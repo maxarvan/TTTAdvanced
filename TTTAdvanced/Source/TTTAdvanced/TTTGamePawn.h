@@ -40,6 +40,16 @@ public:
 		return PawnType;
 	}
 
+	void SetPawnSizeType(ETTTGamePawnSizeType NewPawnSizeType)
+	{
+		PawnSizeType = NewPawnSizeType;
+	}
+	
+	ETTTGamePawnSizeType GetPawnSizeType() const
+	{
+		return PawnSizeType;
+	}
+
 	virtual void Tick(float Delta) override;
 	
 protected:
@@ -58,4 +68,6 @@ public:
 
 private:
 	ETTTGamePawnType PawnType = ETTTGamePawnType::Invalid;
+
+	ETTTGamePawnSizeType PawnSizeType = ETTTGamePawnSizeType::Invalid;
 };

@@ -127,7 +127,7 @@ void ATTTController::SpawnGamePawns()
 		return;
 	}
 
-	auto SpawnPawn = [&](const FVector& Location)->ATTTGamePawn*
+	auto SpawnPawn = [&](const FVector& Location, ETTTGamePawnSizeType PawnSizeType)->ATTTGamePawn*
 	{
 		const TSubclassOf<ATTTGamePawn> GamePawnClass = Game->GetGamePawnClass(GamePawnType);
 		const FRotator Rotation = GetPawn()->GetActorRotation();
@@ -139,19 +139,39 @@ void ATTTController::SpawnGamePawns()
 
 		Pawn->SetState(EGamePawnState::OnSpawner);
 		Pawn->SetPawnType(GamePawnType);
+		Pawn->SetPawnSizeType(PawnSizeType);
 
+		float Scale = 1.0f;
+		switch (PawnSizeType)
+		{
+		case ETTTGamePawnSizeType::Small:
+			Scale = .6f;
+			break;
+		case ETTTGamePawnSizeType::Medium:
+			Scale = .8f;
+			break;
+		case ETTTGamePawnSizeType::Large:
+			Scale = 1.1f;
+			break;
+		}
+
+		Pawn->SetActorScale3D(FVector(Scale));
+		
 		return Pawn;
 	};
 
-	constexpr int PawnsNumber = 6;
-	constexpr float DistanceBetweenPawns = 60.f;
-
-	const FVector InitialOffset = -FVector::RightVector * DistanceBetweenPawns * (PawnsNumber - 1) * 0.5f;
+	if(Game->GamePawnSizeOrder.IsEmpty())
+	{
+		return;
+	}
 	
-	for(int i = 0 ; i < PawnsNumber ; ++i)
+	constexpr float DistanceBetweenPawns = 60.f;
+	const FVector InitialOffset = -FVector::RightVector * DistanceBetweenPawns * (Game->GamePawnSizeOrder.Num() - 1) * 0.5f;
+	
+	for(int i = 0 ; i < Game->GamePawnSizeOrder.Num() ; ++i)
 	{
 		FVector Location = GetPawn()->GetActorLocation() + FVector::RightVector * DistanceBetweenPawns * i + InitialOffset;
-		GamePawns.Add(SpawnPawn(Location));
+		GamePawns.Add(SpawnPawn(Location, Game->GamePawnSizeOrder[i]));
 	}
 }
 

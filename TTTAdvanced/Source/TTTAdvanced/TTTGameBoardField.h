@@ -17,7 +17,7 @@ class TTTADVANCED_API ATTTGameBoardField : public AActor
 public:
 	ATTTGameBoardField();
 
-	bool IsOccupied() const { return bIsOccupied; }
+	bool IsOccupied() const;
 	bool CanOccupyWithGamePawn(const ATTTGamePawn* GamePawn) const;
 	bool OccupyWithGamePawn(ATTTGamePawn* GamePawn);
 	bool AreOccupiedByGamePawnType(const ATTTGameBoardField* OtherField, ETTTGamePawnType GamePawnType) const;
@@ -27,8 +27,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	bool bIsOccupied = false;
-
 	UPROPERTY()
 	ATTTGamePawn* OccupationPawn = nullptr;
 };

@@ -24,6 +24,15 @@ enum class ETTTGamePawnType : uint8
 ENUM_RANGE_BY_FIRST_AND_LAST(ETTTGamePawnType, ETTTGamePawnType::Cross, ETTTGamePawnType::Circle);
 
 UENUM()
+enum class ETTTGamePawnSizeType : uint8
+{
+	Small,
+	Medium,
+	Large,
+	Invalid UMETA(Hidden)
+};
+
+UENUM()
 enum class ETTTGameStateType : uint8
 {
 	WaitForPlayers,
@@ -66,6 +75,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category=Game, meta=(AllowPrivateAccess = "true"))
 	TMap< ETTTGamePawnType, TSubclassOf<ATTTGamePawn> > GamePawns;
 
+	UPROPERTY(EditDefaultsOnly, Category=Game)
+	TArray<ETTTGamePawnSizeType> GamePawnSizeOrder;
+	
 	FOnGameResetRequested OnGameResetRequested;
 	FOnGameStateChanged OnGameStateChanged;
 	
