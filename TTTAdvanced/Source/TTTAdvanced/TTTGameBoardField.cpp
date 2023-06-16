@@ -30,7 +30,6 @@ bool ATTTGameBoardField::IsOccupied() const
 
 bool ATTTGameBoardField::CanOccupyWithGamePawn(const ATTTGamePawn* GamePawn) const
 {
-	//return !bIsOccupied && GamePawn;
 	if(!GamePawn)
 	{
 		return false;
@@ -47,6 +46,7 @@ bool ATTTGameBoardField::OccupyWithGamePawn(ATTTGamePawn* GamePawn)
 		const FRotator Rotation = GetActorRotation();
 
 		GamePawn->SetState(EGamePawnState::Placed);
+		GamePawn->SetOccupiedBoardField(this);
 		
 		GamePawn->TeleportTo(Location, Rotation);
 

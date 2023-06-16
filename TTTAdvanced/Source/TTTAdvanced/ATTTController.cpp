@@ -16,6 +16,10 @@
 
 ATTTController::ATTTController()
 {
+	 PrimaryActorTick.bCanEverTick = true;
+	// PrimaryActorTick.bTickEvenWhenPaused = false;
+	// PrimaryActorTick.TickInterval = 0.5f;
+	
 	GamePawnType = ETTTGamePawnType::Invalid;
 }
 
@@ -78,6 +82,7 @@ void ATTTController::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Out
 
 	DOREPLIFETIME(ATTTController, bIsMyTurn);
 	DOREPLIFETIME(ATTTController, CurrentGameStateHandler);
+	DOREPLIFETIME(ATTTController, PawnInAir);
 }
 
 void ATTTController::TryResumeGame()
@@ -262,9 +267,15 @@ void ATTTController::Server_OperateGamePawn_Implementation(const FHitResult& Hit
 		return;
 	}
 
-	const TObjectPtr<ATTTGamePawn> HitPawn = Cast<ATTTGamePawn>(Hit.GetActor());
-	const TObjectPtr<ATTTGameBoardField> HitField = Cast<ATTTGameBoardField>(Hit.GetActor());
+	TObjectPtr<ATTTGamePawn> HitPawn = Cast<ATTTGamePawn>(Hit.GetActor());
+	TObjectPtr<ATTTGameBoardField> HitField = Cast<ATTTGameBoardField>(Hit.GetActor());
 
+	if(PawnInAir && IsValid(HitPawn) && HitPawn->GetState() == EGamePawnState::Placed)
+	{
+		HitField = HitPawn->GetOccupiedBoardField();
+		HitPawn = nullptr;
+	}
+	
 	if(HitPawn)
 	{
 		switch(HitPawn->GetState())
@@ -283,9 +294,9 @@ void ATTTController::Server_OperateGamePawn_Implementation(const FHitResult& Hit
 	}
 	else if(HitField && PawnInAir)
 	{
-		if(CanPerformTurn(PawnInAir, Hit))
+		if(CanPerformTurn(PawnInAir, HitField))
 		{
-			PerformTurn(PawnInAir, Hit);
+			PerformTurn(PawnInAir, HitField);
 		}
 	}
 	else if(PawnInAir)
@@ -302,31 +313,25 @@ void ATTTController::Server_RequestGameRestart_Implementation()
 	}
 }
 
-bool ATTTController::CanPerformTurn(ATTTGamePawn* GamePawn, const FHitResult& Hit)
+bool ATTTController::CanPerformTurn(const ATTTGamePawn* GamePawn, const ATTTGameBoardField* BoardField) const
 {
 	ensure(GamePawn);
 	
-	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
+	if(const ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
 	{
-		if(ATTTGameBoardField* BoardField = Cast<ATTTGameBoardField>(Hit.GetActor()))
-		{
-			return Game->CanPerformTurn(this, GamePawn, BoardField);
-		}
+		return Game->CanPerformTurn(this, GamePawn, BoardField);
 	}
 
 	return false;
 }
 
-bool ATTTController::PerformTurn(ATTTGamePawn* GamePawn, const FHitResult& Hit)
+bool ATTTController::PerformTurn(ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField)
 {
 	ensure(GamePawn);
 	
 	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
 	{
-		if(ATTTGameBoardField* BoardField = Cast<ATTTGameBoardField>(Hit.GetActor()))
-		{
-			return Game->PerformTurn(this, GamePawn, BoardField);
-		}
+		return Game->PerformTurn(this, GamePawn, BoardField);
 	}
 
 	return false;
@@ -337,5 +342,57 @@ void ATTTController::Server_RequestGameState_Implementation(ETTTGameStateType Ne
 	if(ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
 	{
 		Game->SetGameStateType(NewState);
+	}
+}
+
+void ATTTController::Tick(float DeltaSeconds)
+{
+	if(IsLocalPlayerController() && GetIsMyTurn())
+	{
+		if(PawnInAir)
+		{
+			FHitResult Hit;
+	
+			if(GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit))
+			{
+				TObjectPtr<ATTTGamePawn> HitPawn = Cast<ATTTGamePawn>(Hit.GetActor());
+				TObjectPtr<ATTTGameBoardField> HitField = Cast<ATTTGameBoardField>(Hit.GetActor());
+
+				if(!HitField && HitPawn)
+				{
+					HitField = HitPawn->GetOccupiedBoardField();
+				}
+
+				if(HitField)
+				{
+					if(const ATTTGame* Game = UTTTHelper::GetGame(GetWorld()))
+					{
+						if(Game->CanPerformTurn(this, PawnInAir, HitField))
+						{
+							HitField->MarkAsValidForTurn();
+						}
+						else
+						{
+							HitField->MarkAsInvalidForTurn();
+						}
+
+						if(IsValid(LastMarkedField) && HitField != LastMarkedField)
+						{
+							LastMarkedField->ResetMarking();
+							LastMarkedField = nullptr;
+						}
+						
+						LastMarkedField = HitField;
+						return;
+					}
+				}
+			}
+		}
+	}
+
+	if(IsValid(LastMarkedField))
+	{
+		LastMarkedField->ResetMarking();
+		LastMarkedField = nullptr;
 	}
 }

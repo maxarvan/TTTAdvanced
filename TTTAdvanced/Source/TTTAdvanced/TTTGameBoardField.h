@@ -23,6 +23,15 @@ public:
 	bool AreOccupiedByGamePawnType(const ATTTGameBoardField* OtherField, ETTTGamePawnType GamePawnType) const;
 	void ResetGame();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void MarkAsValidForTurn();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void MarkAsInvalidForTurn();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void ResetMarking();
+	
 protected:
 	virtual void BeginPlay() override;
 

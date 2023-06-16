@@ -50,6 +50,16 @@ public:
 		return PawnSizeType;
 	}
 
+	void SetOccupiedBoardField(TObjectPtr<ATTTGameBoardField> InOccupiedBoardField)
+	{
+		OccupiedBoardField = InOccupiedBoardField;
+	}
+	
+	TObjectPtr<ATTTGameBoardField> GetOccupiedBoardField() const
+	{
+		return OccupiedBoardField;
+	}
+		
 	virtual void Tick(float Delta) override;
 	
 protected:
@@ -70,4 +80,7 @@ private:
 	ETTTGamePawnType PawnType = ETTTGamePawnType::Invalid;
 
 	ETTTGamePawnSizeType PawnSizeType = ETTTGamePawnSizeType::Invalid;
+
+	UPROPERTY()
+	TObjectPtr<ATTTGameBoardField> OccupiedBoardField = nullptr;
 };

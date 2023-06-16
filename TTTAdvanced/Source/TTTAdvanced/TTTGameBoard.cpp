@@ -60,13 +60,13 @@ void ATTTGameBoard::HandleResetGameRequested()
 	}
 }
 
-bool ATTTGameBoard::CanOccupyBoardFieldWithGamePawn(const ATTTController* Controller, ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField) const
+bool ATTTGameBoard::CanOccupyBoardFieldWithGamePawn(const ATTTController* Controller, const ATTTGamePawn* GamePawn, const ATTTGameBoardField* BoardField) const
 {
 	ensure(Controller);
 	ensure(GamePawn);
 	ensure(BoardField);
 	
-	if(BoardFields.Find(BoardField) == INDEX_NONE)
+	if(BoardFields.Find(const_cast<ATTTGameBoardField*>(BoardField)) == INDEX_NONE)
 	{
 		return false;
 	}

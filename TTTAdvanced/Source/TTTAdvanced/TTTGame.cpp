@@ -105,11 +105,12 @@ TSubclassOf<ATTTGamePawn> ATTTGame::GetGamePawnClass(ETTTGamePawnType GamePawnTy
 	return nullptr;
 }
 
-bool ATTTGame::CanPerformTurn(const ATTTController* Controller, ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField) const
+bool ATTTGame::CanPerformTurn(const ATTTController* Controller, const ATTTGamePawn* GamePawn, const ATTTGameBoardField* BoardField) const
 {
 	ensure(Controller);
 	ensure(GamePawn);
-
+	ensure(BoardField);
+	
 	if(GetGameStateType() != ETTTGameStateType::Game)
 	{
 		return false;

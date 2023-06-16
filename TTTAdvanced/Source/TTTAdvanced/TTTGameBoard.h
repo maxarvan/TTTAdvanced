@@ -18,7 +18,7 @@ class TTTADVANCED_API ATTTGameBoard : public AActor
 public:
 	ATTTGameBoard();
 
-	bool CanOccupyBoardFieldWithGamePawn(const ATTTController* Controller, ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField) const;
+	bool CanOccupyBoardFieldWithGamePawn(const ATTTController* Controller, const ATTTGamePawn* GamePawn, const ATTTGameBoardField* BoardField) const;
 	bool OccupyBoardFieldWithGamePawn(const ATTTController* Controller, ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField);
 	
 	virtual void BeginPlay() override;

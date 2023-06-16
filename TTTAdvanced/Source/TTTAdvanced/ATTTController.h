@@ -40,7 +40,7 @@ protected:
 	virtual void SetupInputComponent() override;
 	
 	virtual void BeginPlay() override;
-
+	virtual void Tick(float DeltaSeconds) override;
 	virtual void OnPossess(APawn* PawnToPossess) override;
 	virtual void OnUnPossess() override;
 	
@@ -48,8 +48,8 @@ protected:
 	void OnPauseGameInputPressed();
 
 private:
-	bool CanPerformTurn(ATTTGamePawn* GamePawn, const FHitResult& Hit);
-	bool PerformTurn(ATTTGamePawn* GamePawn, const FHitResult& Hit);
+	bool CanPerformTurn(const ATTTGamePawn* GamePawn, const ATTTGameBoardField* BoardField) const;
+	bool PerformTurn(ATTTGamePawn* GamePawn, ATTTGameBoardField* BoardField);
 
 	UFUNCTION(Server, Reliable)
 	void Server_RequestGameState(ETTTGameStateType NewState);
@@ -103,6 +103,8 @@ private:
 	UPROPERTY()
 	TArray<TObjectPtr<ATTTGamePawn> > GamePawns;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TObjectPtr<ATTTGamePawn> PawnInAir = nullptr;
+
+	TObjectPtr<ATTTGameBoardField> LastMarkedField = nullptr;
 };
